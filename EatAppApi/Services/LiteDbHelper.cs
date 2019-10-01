@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace EatAppApi.Services
 {
-    public class DbHelper : IDbHelper
+    public class LiteDbHelper : ILiteDbHelper
     {
         private readonly string n = Environment.NewLine;
         private static readonly ConnectionString conString;
 
-        static DbHelper()
+        static LiteDbHelper()
         {
             var dbName = "appdb.db";
             var dbRootPath = $@"{Directory.GetCurrentDirectory()}";

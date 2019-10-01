@@ -14,8 +14,8 @@ namespace EatAppApi.Controllers
     [ApiController]
     public class UserController : Controller
     {
-        private readonly IDbHelper dbHelper;
-        public UserController(IDbHelper dbHelper)
+        private readonly ILiteDbHelper dbHelper;
+        public UserController(ILiteDbHelper dbHelper)
         {
             this.dbHelper = dbHelper;
         }
