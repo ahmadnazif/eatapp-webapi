@@ -9,5 +9,8 @@ namespace EatAppApi.Models
     {
         public string Message { get; set; }
         public DateTime DateTime { get; set; }
+        public string ServerTimezoneId { get; set; }
+        public string ServerTimezoneOffset { get; set; }
+        public string CurrentUtcTime { get; set; }
     }
 }

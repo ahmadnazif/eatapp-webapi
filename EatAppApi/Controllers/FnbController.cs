@@ -15,16 +15,16 @@ namespace EatAppApi.Controllers
     [ApiController]
     public class FnbController : ControllerBase
     {
-        private readonly ILiteDbHelper dbHelper;
-        public FnbController(ILiteDbHelper dbHelper)
+        private readonly IMysqlDbHelper dbHelper;
+        public FnbController(IMysqlDbHelper dbHelper)
         {
             this.dbHelper = dbHelper;
         }
 
         [HttpGet("populate")]
-        public ActionResult<string> Populate()
+        public async Task<ActionResult<string>> Populate()
         {
-            if (dbHelper.ListAllFnb().Count == 0)
+            if ((await dbHelper.ListAllFnbAsync()).Count == 0)
             {
                 List<Fnb> fnbList = new List<Fnb>();
 
@@ -38,7 +38,8 @@ namespace EatAppApi.Controllers
                 Add("Sirap Bandung", FnbType.Baverage);
                 Add("Kopi O", FnbType.Baverage);
 
-                return dbHelper.AddBatchFnb(fnbList);
+                var r = await dbHelper.AddBatchFnbAsync(fnbList);
+                return r.Message;
 
                 void Add(string name, FnbType type)
                 {
@@ -56,44 +57,47 @@ namespace EatAppApi.Controllers
         }
 
         [HttpGet("get-by-id")]
-        public ActionResult<Fnb> GetFnbById()
+        public async Task<ActionResult<Fnb>> GetFnbById()
         {
             var id = Request.Query["id"];
             if (!StringValues.IsNullOrEmpty(id))
             {
                 var succ = int.TryParse(id, out int result);
-                return dbHelper.GetFnbById(result);
+                return await dbHelper.GetFnbByIdAsync(result);
             }
 
             return null;
         }
 
         [HttpGet("get-by-name")]
-        public ActionResult<Fnb> GetFnbByName()
+        public async Task<ActionResult<Fnb>> GetFnbByName()
         {
             var name = Request.Query["name"];
             if (!StringValues.IsNullOrEmpty(name))
             {
-                return dbHelper.GetFnbByName(name);
+                return await dbHelper.GetFnbByNameAsync(name);
             }
 
             return null;
         }
 
         [HttpGet("list-all")]
-        public ActionResult<List<Fnb>> ListAllFnb()
+        public async Task<ActionResult<List<Fnb>>> ListAllFnb()
         {
-            return dbHelper.ListAllFnb();
+            return await dbHelper.ListAllFnbAsync();
         }
 
         [HttpPost("add")]
-        public ActionResult<string> Add([FromBody] Fnb fnb)
+        public async Task<ActionResult<string>> Add([FromBody] Fnb fnb)
         {
-            var exist = dbHelper.IsFnbExist(fnb.Name);
+            var exist = await dbHelper.IsFnbExistAsync(fnb.Name);
             if (exist)
                 return $"{fnb.Name} already exist";
             else
-                return dbHelper.AddFnb(fnb);
+            {
+                var r = await dbHelper.AddFnbAsync(fnb);
+                return r.Message;
+            }
         }
 
     }

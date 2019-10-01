@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace EatAppApi.Services
 {
+    [Obsolete]
     public interface ILiteDbHelper
     {
         // Fnb

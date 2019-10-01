@@ -14,45 +14,49 @@ namespace EatAppApi.Controllers
     [ApiController]
     public class FnbCommentController : ControllerBase
     {
-        private readonly ILiteDbHelper dbHelper;
-        public FnbCommentController(ILiteDbHelper dbHelper)
+        private readonly IMysqlDbHelper dbHelper;
+        public FnbCommentController(IMysqlDbHelper dbHelper)
         {
             this.dbHelper = dbHelper;
         }
 
         [HttpPost("add")]
-        public ActionResult<string> AddComment([FromBody] FnbComment c)
+        public async Task<ActionResult<string>> AddComment([FromBody] FnbComment c)
         {
-            var fnb = dbHelper.GetFnbById(c.FnbId);
+            var fnb = await dbHelper.GetFnbByIdAsync(c.FnbId);
             if (fnb == null)
                 return "FnB Not found";
 
-            return dbHelper.AddFnbComment(c.FnbId, c.CommenterName, c.Comment, c.Rating);
+            var r = await dbHelper.AddFnbCommentAsync(c.FnbId, c.CommenterId, c.Comment, c.Rating, c.BaseRating);
+            return r.Message;
         }
 
         [HttpGet("get-by-fnbid")]
-        public ActionResult<List<FnbComment>> ListAllFnbComment()
+        public async Task<ActionResult<List<FnbComment>>> ListAllFnbComment()
         {
             var fnbId = Request.Query["fnbid"];
             if (!StringValues.IsNullOrEmpty(fnbId))
             {
                 var succ = int.TryParse(fnbId, out int result);
                 if (succ)
-                    return dbHelper.ListAllFnbComment(result);
+                    return await dbHelper.ListAllFnbCommentAsync(result);
             }
 
             return new List<FnbComment>();
         }
 
         [HttpGet("delete-by-fnbid")]
-        public ActionResult<string> DeleteAll()
+        public async Task<ActionResult<string>> DeleteAll()
         {
             var fnbId = Request.Query["fnbid"];
             if (!StringValues.IsNullOrEmpty(fnbId))
             {
                 var succ = int.TryParse(fnbId, out int result);
                 if (succ)
-                    return dbHelper.DeleteAllComment(result);
+                {
+                    var r = await dbHelper.DeleteAllCommentAsync(result);
+                    return r.Message;
+                }
             }
 
             return null;

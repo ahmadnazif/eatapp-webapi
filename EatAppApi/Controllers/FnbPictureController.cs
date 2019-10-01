@@ -12,8 +12,8 @@ namespace EatAppApi.Controllers
     [ApiController]
     public class FnbPictureController : ControllerBase
     {
-        private readonly ILiteDbHelper dbHelper;
-        public FnbPictureController(ILiteDbHelper dbHelper)
+        private readonly IMysqlDbHelper dbHelper;
+        public FnbPictureController(IMysqlDbHelper dbHelper)
         {
             this.dbHelper = dbHelper;
         }

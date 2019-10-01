@@ -167,10 +167,10 @@ namespace EatAppApi.Services
                     var id = coll.Insert(new FnbComment
                     {
                         FnbId = fnbId,
-                        CommenterName = commenterName,
+                        //CommenterName = commenterName,
                         Comment = comment,
                         Rating = rating,
-                        TimeAdded = DateTime.Now
+                        //TimeAdded = DateTime.Now
                     });
 
                     return $"Comment & rating added. Total comment: {ListAllFnbComment(fnbId).Count}";
@@ -323,7 +323,7 @@ namespace EatAppApi.Services
                         Username = username,
                         PasswordHash = passwordHash,
                         Email = email,
-                        CreatedDate = DateTime.Now
+                        CreatedTime = DateTime.Now
                     });
                     return $"'{username}' added with ID '{id.AsString}'";
                 }
@@ -364,7 +364,7 @@ namespace EatAppApi.Services
 
                         Username = user.Username,
                         Avatar = user.Avatar,
-                        CreatedDate = user.CreatedDate,
+                        CreatedTime = user.CreatedTime,
                         Email = user.Email
                     });
                     return (true, $"Password for '{user.Username}' changed");
@@ -391,7 +391,7 @@ namespace EatAppApi.Services
 
                         Username = user.Username,
                         PasswordHash = user.PasswordHash,
-                        CreatedDate = user.CreatedDate,
+                        CreatedTime = user.CreatedTime,
                     });
                     return (true, $"User '{user.Username}' successfully updated");
                 }

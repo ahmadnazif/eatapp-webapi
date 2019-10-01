@@ -11,5 +11,6 @@ namespace EatAppApi.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public FnbType FnbType { get; set; }
+        public DateTime CreatedTime { get; set; }
     }
 }
