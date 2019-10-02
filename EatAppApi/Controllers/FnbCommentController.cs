@@ -31,7 +31,7 @@ namespace EatAppApi.Controllers
             return r.Message;
         }
 
-        [HttpGet("get-by-fnbid")]
+        [HttpGet("list-all")]
         public async Task<ActionResult<List<FnbComment>>> ListAllFnbComment()
         {
             var fnbId = Request.Query["fnbid"];
@@ -43,6 +43,20 @@ namespace EatAppApi.Controllers
             }
 
             return new List<FnbComment>();
+        }
+
+        [HttpGet("count")]
+        public async Task<ActionResult<int>> CountAllFnbComment()
+        {
+            var fnbId = Request.Query["fnbid"];
+            if (!StringValues.IsNullOrEmpty(fnbId))
+            {
+                var succ = int.TryParse(fnbId, out int result);
+                if (succ)
+                    return await dbHelper.CountAllFnbCommentAsync(result);
+            }
+
+            return 0;
         }
 
         [HttpGet("delete-by-fnbid")]

@@ -34,13 +34,25 @@ namespace EatAppApi.Controllers
             return null;
         }
 
+        [HttpGet("get-by-username")]
+        public async Task<ActionResult<User>> GetUserByUsername()
+        {
+            var username = Request.Query["username"];
+            if (!StringValues.IsNullOrEmpty(username))
+            {
+                return await dbHelper.GetUserByUsernameAsync(username);
+            }
+
+            return null;
+        }
+
         [HttpPost("add")]
         public async Task<ActionResult<string>> AddUser([FromBody] User user)
         {
             var exist = await dbHelper.IsUsernameExistAsync(user.Username);
             if (!exist)
             {
-                var r = await dbHelper.AddUserAsync(user.Username, user.PasswordHash, user.Email);
+                var r = await dbHelper.AddUserAsync(user.Username, user.PasswordHash, user.Email, user.Role);
                 return r.Message;
             }
             else
@@ -115,12 +127,12 @@ namespace EatAppApi.Controllers
             var user = await dbHelper.GetUserByUsernameAsync(u.Username);
             if (user != null)
             {
-               var resp = await dbHelper.UpdateUserAsync(user.Id, u.Email, u.Avatar);
+                var resp = await dbHelper.UpdateUserAsync(user.Id, u.Email, u.Fullname, u.Avatar);
                 return new UserAuthResponse
                 {
                     IsSuccess = resp.IsSuccess,
                     Message = resp.Message
-                };                
+                };
             }
 
             return new UserAuthResponse

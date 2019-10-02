@@ -13,10 +13,10 @@ namespace EatAppApi.Services
         Task<User> GetUserByIdAsync(int id);
         Task<User> GetUserByUsernameAsync(string username);
         Task<bool> IsUsernameExistAsync(string username);
-        Task<DbCommitResponse> AddUserAsync(string username, string passwordHash, string email);
+        Task<DbCommitResponse> AddUserAsync(string username, string passwordHash, string email, UserRole role);
         Task<List<User>> ListAllUserAsync();
         Task<DbCommitResponse> ChangePasswordAsync(int userId, string newPasswordHash);
-        Task<DbCommitResponse> UpdateUserAsync(int userId, string email, string avatar);
+        Task<DbCommitResponse> UpdateUserAsync(int userId, string email, string fullname, string avatar);
 
         // Fnb
         Task<List<Fnb>> ListAllFnbAsync();
@@ -29,6 +29,7 @@ namespace EatAppApi.Services
         // Fnb comment
         Task<DbCommitResponse> AddFnbCommentAsync(int fnbId, int commenterId, string comment, int rating, BaseRating baseRating);
         Task<List<FnbComment>> ListAllFnbCommentAsync(int fnbId);
+        Task<int> CountAllFnbCommentAsync(int fnbId);
         Task<DbCommitResponse> DeleteAllCommentAsync(int fnbId);
 
 

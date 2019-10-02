@@ -69,9 +69,11 @@ namespace EatAppApi.Services
                                 {
                                     Id = int.Parse(GetStringValue(reader["id"])),
                                     Username = GetStringValue(reader["username"]),
+                                    Fullname = GetStringValue(reader["fullname"]),
                                     PasswordHash = GetStringValue(reader["password_hash"]),
                                     Email = GetStringValue(reader["email"]),
                                     Avatar = GetStringValue(reader["avatar"]),
+                                    Role = (UserRole)int.Parse(GetStringValue(reader["role"])),
                                     CreatedTime = GetDateTimeValue(reader["created_time"]).Value.ToLocalTime(),
                                 };
                             }
@@ -109,9 +111,11 @@ namespace EatAppApi.Services
                                 {
                                     Id = int.Parse(GetStringValue(reader["id"])),
                                     Username = GetStringValue(reader["username"]),
+                                    Fullname = GetStringValue(reader["fullname"]),
                                     PasswordHash = GetStringValue(reader["password_hash"]),
                                     Email = GetStringValue(reader["email"]),
                                     Avatar = GetStringValue(reader["avatar"]),
+                                    Role = (UserRole)int.Parse(GetStringValue(reader["role"])),
                                     CreatedTime = GetDateTimeValue(reader["created_time"]).Value.ToLocalTime(),
                                 };
                             }
@@ -160,14 +164,14 @@ namespace EatAppApi.Services
             }
         }
 
-        public async Task<DbCommitResponse> AddUserAsync(string username, string passwordHash, string email)
+        public async Task<DbCommitResponse> AddUserAsync(string username, string passwordHash, string email, UserRole role)
         {
             try
             {
                 DbCommitResponse resp = null;
                 string query =
-                    "INSERT into user (username, password_hash, email) VALUES " +
-                    "(@a, @b, @c);";
+                    "INSERT into user (username, password_hash, email, role) VALUES " +
+                    "(@a, @b, @c, @d);";
 
                 using (MySqlConnection connection = new MySqlConnection(this.dbConString))
                 {
@@ -177,6 +181,7 @@ namespace EatAppApi.Services
                         cmd.Parameters.AddWithValue("@a", username);
                         cmd.Parameters.AddWithValue("@b", passwordHash);
                         cmd.Parameters.AddWithValue("@c", email);
+                        cmd.Parameters.AddWithValue("@d", role);
 
                         resp = new DbCommitResponse
                         {
@@ -219,8 +224,10 @@ namespace EatAppApi.Services
                                     Id = int.Parse(GetStringValue(reader["id"])),
                                     Username = GetStringValue(reader["username"]),
                                     PasswordHash = GetStringValue(reader["password_hash"]),
+                                    Fullname = GetStringValue(reader["fullname"]),
                                     Email = GetStringValue(reader["email"]),
                                     Avatar = GetStringValue(reader["avatar"]),
+                                    Role = (UserRole)int.Parse(GetStringValue(reader["role"])),
                                     CreatedTime = GetDateTimeValue(reader["created_time"]).Value.ToLocalTime(),
                                 };
 
@@ -267,13 +274,13 @@ namespace EatAppApi.Services
             catch (Exception ex) { return new DbCommitResponse { IsSuccess = false, Message = ex.Message }; }
         }
 
-        public async Task<DbCommitResponse> UpdateUserAsync(int userId, string email, string avatar)
+        public async Task<DbCommitResponse> UpdateUserAsync(int userId, string email, string fullname, string avatar)
         {
             try
             {
                 DbCommitResponse resp = null;
                 string query =
-                    "UPDATE user SET email = @email, avatar = @avatar WHERE id = @id;";
+                    "UPDATE user SET email = @email, fullname = @fullname, avatar = @avatar WHERE id = @id;";
 
                 using (MySqlConnection connection = new MySqlConnection(this.dbConString))
                 {
@@ -281,13 +288,15 @@ namespace EatAppApi.Services
                     using (MySqlCommand cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@email", email);
+                        cmd.Parameters.AddWithValue("@fullname", fullname);
                         cmd.Parameters.AddWithValue("@avatar", avatar);
                         cmd.Parameters.AddWithValue("@id", userId);
+                        await cmd.ExecuteNonQueryAsync();
 
                         resp = new DbCommitResponse
                         {
                             IsSuccess = true,
-                            Message = $"{await cmd.ExecuteNonQueryAsync()} record updated"
+                            Message = "User updated"
                         };
                     }
                 }
@@ -527,12 +536,12 @@ namespace EatAppApi.Services
                         cmd.Parameters.AddWithValue("@c", comment);
                         cmd.Parameters.AddWithValue("@d", rating);
                         cmd.Parameters.AddWithValue("@e", baseRating);
-
+                        await cmd.ExecuteNonQueryAsync();
 
                         resp = new DbCommitResponse
                         {
                             IsSuccess = true,
-                            Message = $"{await cmd.ExecuteNonQueryAsync()} record successfully created"
+                            Message = $"Comment successfully submitted"
                         };
                     }
                 }
@@ -591,6 +600,38 @@ namespace EatAppApi.Services
             }
         }
 
+        public async Task<int> CountAllFnbCommentAsync(int fnbId)
+        {
+            try
+            {
+                int count = 0;
+                string sql = $"SELECT COUNT(*) FROM fnb_comment WHERE fnb_id = '{fnbId}';";
+
+                using (MySqlConnection connection = new MySqlConnection(dbConString))
+                {
+                    await connection.OpenAsync();
+                    using (MySqlCommand cmd = new MySqlCommand(sql, connection))
+                    {
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                count = int.Parse(GetStringValue(reader[0]));
+                            }
+                        }
+                    }
+                }
+
+                return count;
+            }
+            catch (Exception ex)
+            {
+                //LOGGER.LogDbException(ex);
+                return 0;
+            }
+        }
+
+
         public async Task<DbCommitResponse> DeleteAllCommentAsync(int fnbId)
         {
             try
@@ -605,11 +646,12 @@ namespace EatAppApi.Services
                     using (MySqlCommand cmd = new MySqlCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@id", fnbId);
+                        await cmd.ExecuteNonQueryAsync();
 
                         resp = new DbCommitResponse
                         {
                             IsSuccess = true,
-                            Message = $"{await cmd.ExecuteNonQueryAsync()} record successfully deleted"
+                            Message = $"All comment deleted"
                         };
                     }
                 }
