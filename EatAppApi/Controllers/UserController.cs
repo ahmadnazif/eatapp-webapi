@@ -21,7 +21,7 @@ namespace EatAppApi.Controllers
         }
 
         [HttpGet("get-by-id")]
-        public async Task<ActionResult<User>> GetUserById()
+        public async Task<ActionResult<UserProfile>> GetUserById()
         {
             var id = Request.Query["id"];
             if (!StringValues.IsNullOrEmpty(id))
@@ -35,7 +35,7 @@ namespace EatAppApi.Controllers
         }
 
         [HttpGet("get-by-username")]
-        public async Task<ActionResult<User>> GetUserByUsername()
+        public async Task<ActionResult<UserProfile>> GetUserByUsername()
         {
             var username = Request.Query["username"];
             if (!StringValues.IsNullOrEmpty(username))
@@ -47,12 +47,14 @@ namespace EatAppApi.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<ActionResult<string>> AddUser([FromBody] User user)
+        public async Task<ActionResult<string>> AddUser([FromBody] UserInit user)
         {
             var exist = await dbHelper.IsUsernameExistAsync(user.Username);
             if (!exist)
             {
-                var r = await dbHelper.AddUserAsync(user.Username, user.PasswordHash, user.Email, user.Role);
+                var passwordSalt = Guid.NewGuid().ToString("N").ToUpper();
+                var passwordHash = PasswordHasher.GeneratePasswordHash(user.Password, passwordSalt);
+                var r = await dbHelper.AddUserAsync(user.Username, passwordHash, passwordSalt, user.Email, user.Role);
                 return r.Message;
             }
             else
@@ -60,22 +62,22 @@ namespace EatAppApi.Controllers
         }
 
         [HttpGet("list-all")]
-        public async Task<ActionResult<List<User>>> ListAllUser()
+        public async Task<ActionResult<List<UserProfile>>> ListAllUser()
         {
             return await dbHelper.ListAllUserAsync();
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<UserAuthResponse>> Login([FromBody] UserAuth userAuth)
+        public async Task<ActionResult<UserAuthResponse>> Login([FromBody] UserLogin ul)
         {
-            var user = await dbHelper.GetUserByUsernameAsync(userAuth.Username);
-            if (user != null)
+            var ua = await dbHelper.GetUserAuthAsync(ul.Username);
+            if (ua != null)
             {
-                var valid = PasswordHasher.IsEqual(user.PasswordHash, userAuth.Password);
+                var valid = PasswordHasher.IsEqual(ua.PasswordHash, ua.PasswordSalt, ul.Password);
                 if (valid)
                     return new UserAuthResponse
                     {
-                        IsSuccess = PasswordHasher.IsEqual(user.PasswordHash, userAuth.Password),
+                        IsSuccess = true,
                         Message = "User authenticated"
                     };
             }
@@ -90,14 +92,14 @@ namespace EatAppApi.Controllers
         [HttpPost("change-password")]
         public async Task<ActionResult<UserAuthResponse>> ChangePassword([FromBody] UserChangePassword ucp)
         {
-            var user = await dbHelper.GetUserByUsernameAsync(ucp.Username);
-            if (user != null)
+            var ua = await dbHelper.GetUserAuthAsync(ucp.Username);
+            if (ua != null)
             {
-                var valid = PasswordHasher.IsEqual(user.PasswordHash, ucp.OldPassword);
-                if (valid)
+                var oldValid = PasswordHasher.IsEqual(ua.PasswordHash, ua.PasswordSalt, ucp.OldPassword);
+                if (oldValid)
                 {
-                    var hash = PasswordHasher.GenerateHash(ucp.NewPassword);
-                    var resp = await dbHelper.ChangePasswordAsync(user.Id, hash);
+                    var newPasswordHash = PasswordHasher.GeneratePasswordHash(ucp.NewPassword, ua.PasswordSalt);
+                    var resp = await dbHelper.ChangePasswordAsync(ua.UserId, newPasswordHash);
                     return new UserAuthResponse
                     {
                         IsSuccess = resp.IsSuccess,
@@ -122,7 +124,7 @@ namespace EatAppApi.Controllers
         }
 
         [HttpPost("update")]
-        public async Task<ActionResult<UserAuthResponse>> UpdateUserInfo([FromBody] User u)
+        public async Task<ActionResult<UserAuthResponse>> UpdateUserInfo([FromBody] UserProfile u)
         {
             var user = await dbHelper.GetUserByUsernameAsync(u.Username);
             if (user != null)
@@ -145,17 +147,19 @@ namespace EatAppApi.Controllers
         [HttpGet("generate-hash")]
         public ActionResult<string> GenerateHash()
         {
-            var str = Request.Query["password"];
-            return PasswordHasher.GenerateHash(str);
+            var pass = Request.Query["password"];
+            var salt = Request.Query["salt"];
+            return PasswordHasher.GeneratePasswordHash(pass, salt);
         }
 
         [HttpGet("is-equal")]
         public ActionResult<bool> IsEqual()
         {
             var pass = Request.Query["password"];
+            var salt = Request.Query["salt"];
             var hash = Request.Query["hash"];
 
-            return PasswordHasher.IsEqual(hash, pass);
+            return PasswordHasher.IsEqual(hash, salt, pass);
         }
     }
 }

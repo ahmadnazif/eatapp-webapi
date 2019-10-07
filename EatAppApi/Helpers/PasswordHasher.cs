@@ -22,6 +22,18 @@ namespace EatAppApi.Helpers
             }
         }
 
-        public static bool IsEqual(string passwordHash, string password) => passwordHash == GenerateHash(password);
+        public static string GeneratePasswordHash(string password, string passwordSalt)
+        {
+            var plain = $"{password}{passwordSalt}"; // salt at end of password
+            return GenerateHash(plain);
+        }
+
+        public static bool IsEqual(string passwordHash, string passwordSalt, string password)
+        {
+            var saltedFront = GenerateHash($"{passwordSalt}{password}");
+            var saltedBack = GenerateHash($"{password}{passwordSalt}");
+
+            return (passwordHash == saltedFront || passwordHash == saltedBack) ? true : false;
+        }
     }
 }

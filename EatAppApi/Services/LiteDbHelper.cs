@@ -263,13 +263,13 @@ namespace EatAppApi.Services
 
         // User
 
-        public User GetUserById(int id)
+        public UserProfile GetUserById(int id)
         {
             try
             {
                 using (var db = new LiteDatabase(conString))
                 {
-                    var coll = db.GetCollection<User>();
+                    var coll = db.GetCollection<UserProfile>();
                     return coll.FindById(id);
                 }
             }
@@ -279,13 +279,13 @@ namespace EatAppApi.Services
             }
         }
 
-        public User GetUserByUsername(string username)
+        public UserProfile GetUserByUsername(string username)
         {
             try
             {
                 using (var db = new LiteDatabase(conString))
                 {
-                    var coll = db.GetCollection<User>();
+                    var coll = db.GetCollection<UserProfile>();
                     return coll.FindOne(d => d.Username.ToLower() == username.ToLower());
                 }
             }
@@ -301,7 +301,7 @@ namespace EatAppApi.Services
             {
                 using (var db = new LiteDatabase(conString))
                 {
-                    var coll = db.GetCollection<User>();
+                    var coll = db.GetCollection<UserProfile>();
                     return coll.FindOne(d => d.Username.ToLower() == username.ToLower()) != null;
                 }
             }
@@ -317,11 +317,11 @@ namespace EatAppApi.Services
             {
                 using (var db = new LiteDatabase(conString))
                 {
-                    var data = db.GetCollection<User>();
-                    var id = data.Insert(new User
+                    var data = db.GetCollection<UserProfile>();
+                    var id = data.Insert(new UserProfile
                     {
                         Username = username,
-                        PasswordHash = passwordHash,
+                        //PasswordHash = passwordHash,
                         Email = email,
                         CreatedTime = DateTime.Now
                     });
@@ -334,19 +334,19 @@ namespace EatAppApi.Services
             }
         }
 
-        public List<User> ListAllUser()
+        public List<UserProfile> ListAllUser()
         {
             try
             {
                 using (var db = new LiteDatabase(conString))
                 {
-                    var data = db.GetCollection<User>();
+                    var data = db.GetCollection<UserProfile>();
                     return data.FindAll().ToList();
                 }
             }
             catch
             {
-                return new List<User>();
+                return new List<UserProfile>();
             }
         }
 
@@ -357,10 +357,10 @@ namespace EatAppApi.Services
                 var user = GetUserById(userId);
                 using (var db = new LiteDatabase(conString))
                 {
-                    var data = db.GetCollection<User>();
-                    var succ = data.Update(userId, new User
+                    var data = db.GetCollection<UserProfile>();
+                    var succ = data.Update(userId, new UserProfile
                     {
-                        PasswordHash = newPasswordHash,
+                        //PasswordHash = newPasswordHash,
 
                         Username = user.Username,
                         Avatar = user.Avatar,
@@ -383,14 +383,14 @@ namespace EatAppApi.Services
                 var user = GetUserById(userId);
                 using (var db = new LiteDatabase(conString))
                 {
-                    var data = db.GetCollection<User>();
-                    var succ = data.Update(userId, new User
+                    var data = db.GetCollection<UserProfile>();
+                    var succ = data.Update(userId, new UserProfile
                     {
                         Avatar = avatar,
                         Email = email,
 
                         Username = user.Username,
-                        PasswordHash = user.PasswordHash,
+                        //PasswordHash = user.PasswordHash,
                         CreatedTime = user.CreatedTime,
                     });
                     return (true, $"User '{user.Username}' successfully updated");

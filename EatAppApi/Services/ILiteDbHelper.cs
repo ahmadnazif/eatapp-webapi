@@ -28,11 +28,11 @@ namespace EatAppApi.Services
         List<FnbPicture> ListAllFnbPicture(int fnbId);
 
         // User
-        User GetUserById(int id);
-        User GetUserByUsername(string username);
+        UserProfile GetUserById(int id);
+        UserProfile GetUserByUsername(string username);
         bool IsUsernameExist(string username);
         string AddUser(string username, string passwordHash, string email);
-        List<User> ListAllUser();
+        List<UserProfile> ListAllUser();
         (bool success, string message) ChangePassword(int userId, string newPasswordHash);
         (bool success, string message) UpdateUser(int userId, string email, string avatar);
     }

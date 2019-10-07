@@ -48,11 +48,11 @@ namespace EatAppApi.Services
 
         #region User
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<UserProfile> GetUserByIdAsync(int id)
         {
             try
             {
-                User user = null;
+                UserProfile user = null;
                 string sql = "SELECT * FROM user WHERE id = @id;";
 
                 using (MySqlConnection connection = new MySqlConnection(this.dbConString))
@@ -65,12 +65,12 @@ namespace EatAppApi.Services
                         {
                             while (await reader.ReadAsync())
                             {
-                                user = new User
+                                user = new UserProfile
                                 {
                                     Id = int.Parse(GetStringValue(reader["id"])),
                                     Username = GetStringValue(reader["username"]),
                                     Fullname = GetStringValue(reader["fullname"]),
-                                    PasswordHash = GetStringValue(reader["password_hash"]),
+                                    //PasswordHash = GetStringValue(reader["password_hash"]),
                                     Email = GetStringValue(reader["email"]),
                                     Avatar = GetStringValue(reader["avatar"]),
                                     Role = (UserRole)int.Parse(GetStringValue(reader["role"])),
@@ -90,11 +90,11 @@ namespace EatAppApi.Services
             }
         }
 
-        public async Task<User> GetUserByUsernameAsync(string username)
+        public async Task<UserProfile> GetUserByUsernameAsync(string username)
         {
             try
             {
-                User user = null;
+                UserProfile user = null;
                 string sql = "SELECT * FROM user WHERE username = @username;";
 
                 using (MySqlConnection connection = new MySqlConnection(this.dbConString))
@@ -107,12 +107,12 @@ namespace EatAppApi.Services
                         {
                             while (await reader.ReadAsync())
                             {
-                                user = new User
+                                user = new UserProfile
                                 {
                                     Id = int.Parse(GetStringValue(reader["id"])),
                                     Username = GetStringValue(reader["username"]),
                                     Fullname = GetStringValue(reader["fullname"]),
-                                    PasswordHash = GetStringValue(reader["password_hash"]),
+                                    //PasswordHash = GetStringValue(reader["password_hash"]),
                                     Email = GetStringValue(reader["email"]),
                                     Avatar = GetStringValue(reader["avatar"]),
                                     Role = (UserRole)int.Parse(GetStringValue(reader["role"])),
@@ -131,6 +131,45 @@ namespace EatAppApi.Services
                 return null;
             }
         }
+
+        public async Task<UserAuth> GetUserAuthAsync(string username)
+        {
+            try
+            {
+                UserAuth user = null;
+                string sql = "SELECT id, password_salt, password_hash FROM user WHERE username = @username;";
+
+                using (MySqlConnection connection = new MySqlConnection(this.dbConString))
+                {
+                    await connection.OpenAsync();
+                    using (MySqlCommand cmd = new MySqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@username", username);
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                user = new UserAuth
+                                {
+                                    UserId = int.Parse(GetStringValue(reader[0])),
+                                    Username = username,
+                                    PasswordSalt = GetStringValue(reader[1]),
+                                    PasswordHash = GetStringValue(reader[2])
+                                };
+                            }
+                        }
+                    }
+                }
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                //LOGGER.LogDbException(ex);
+                return null;
+            }
+        }
+
 
         public async Task<bool> IsUsernameExistAsync(string username)
         {
@@ -164,14 +203,14 @@ namespace EatAppApi.Services
             }
         }
 
-        public async Task<DbCommitResponse> AddUserAsync(string username, string passwordHash, string email, UserRole role)
+        public async Task<DbCommitResponse> AddUserAsync(string username, string passwordHash, string passwordSalt, string email, UserRole role)
         {
             try
             {
                 DbCommitResponse resp = null;
                 string query =
-                    "INSERT into user (username, password_hash, email, role) VALUES " +
-                    "(@a, @b, @c, @d);";
+                    "INSERT into user (username, password_hash, password_salt, email, role) VALUES " +
+                    "(@a, @b, @c, @d, @e);";
 
                 using (MySqlConnection connection = new MySqlConnection(this.dbConString))
                 {
@@ -180,8 +219,9 @@ namespace EatAppApi.Services
                     {
                         cmd.Parameters.AddWithValue("@a", username);
                         cmd.Parameters.AddWithValue("@b", passwordHash);
-                        cmd.Parameters.AddWithValue("@c", email);
-                        cmd.Parameters.AddWithValue("@d", role);
+                        cmd.Parameters.AddWithValue("@c", passwordSalt);
+                        cmd.Parameters.AddWithValue("@d", email);
+                        cmd.Parameters.AddWithValue("@e", role);
 
                         resp = new DbCommitResponse
                         {
@@ -203,11 +243,11 @@ namespace EatAppApi.Services
             }
         }
 
-        public async Task<List<User>> ListAllUserAsync()
+        public async Task<List<UserProfile>> ListAllUserAsync()
         {
             try
             {
-                List<User> userList = new List<User>();
+                List<UserProfile> userList = new List<UserProfile>();
                 string sql = "SELECT * FROM user;";
 
                 using (MySqlConnection connection = new MySqlConnection(this.dbConString))
@@ -219,11 +259,11 @@ namespace EatAppApi.Services
                         {
                             while (await reader.ReadAsync())
                             {
-                                var user = new User
+                                var user = new UserProfile
                                 {
                                     Id = int.Parse(GetStringValue(reader["id"])),
                                     Username = GetStringValue(reader["username"]),
-                                    PasswordHash = GetStringValue(reader["password_hash"]),
+                                    //PasswordHash = GetStringValue(reader["password_hash"]),
                                     Fullname = GetStringValue(reader["fullname"]),
                                     Email = GetStringValue(reader["email"]),
                                     Avatar = GetStringValue(reader["avatar"]),
@@ -242,7 +282,7 @@ namespace EatAppApi.Services
             catch (Exception ex)
             {
                 //LOGGER.LogDbException(ex);
-                return new List<User>();
+                return new List<UserProfile>();
             }
         }
 

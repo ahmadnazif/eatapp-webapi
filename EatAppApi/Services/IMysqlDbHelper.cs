@@ -10,11 +10,12 @@ namespace EatAppApi.Services
     public interface IMysqlDbHelper
     {
         // User
-        Task<User> GetUserByIdAsync(int id);
-        Task<User> GetUserByUsernameAsync(string username);
+        Task<UserProfile> GetUserByIdAsync(int id);
+        Task<UserProfile> GetUserByUsernameAsync(string username);
+        Task<UserAuth> GetUserAuthAsync(string username);
         Task<bool> IsUsernameExistAsync(string username);
-        Task<DbCommitResponse> AddUserAsync(string username, string passwordHash, string email, UserRole role);
-        Task<List<User>> ListAllUserAsync();
+        Task<DbCommitResponse> AddUserAsync(string username, string passwordHash, string passwordSalt, string email, UserRole role);
+        Task<List<UserProfile>> ListAllUserAsync();
         Task<DbCommitResponse> ChangePasswordAsync(int userId, string newPasswordHash);
         Task<DbCommitResponse> UpdateUserAsync(int userId, string email, string fullname, string avatar);
 
