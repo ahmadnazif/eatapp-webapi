@@ -13,6 +13,7 @@ namespace EatAppApi.Services
         Task<UserProfile> GetUserByIdAsync(int id);
         Task<UserProfile> GetUserByUsernameAsync(string username);
         Task<UserAuth> GetUserAuthAsync(string username);
+        Task<DbCommitResponse> UpdateLoginTimeAsync(int userId);
         Task<bool> IsUsernameExistAsync(string username);
         Task<DbCommitResponse> AddUserAsync(string username, string passwordHash, string passwordSalt, string email, UserRole role);
         Task<List<UserProfile>> ListAllUserAsync();

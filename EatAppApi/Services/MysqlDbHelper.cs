@@ -70,11 +70,11 @@ namespace EatAppApi.Services
                                     Id = int.Parse(GetStringValue(reader["id"])),
                                     Username = GetStringValue(reader["username"]),
                                     Fullname = GetStringValue(reader["fullname"]),
-                                    //PasswordHash = GetStringValue(reader["password_hash"]),
                                     Email = GetStringValue(reader["email"]),
                                     Avatar = GetStringValue(reader["avatar"]),
                                     Role = (UserRole)int.Parse(GetStringValue(reader["role"])),
                                     CreatedTime = GetDateTimeValue(reader["created_time"]).Value.ToLocalTime(),
+                                    LastLoginTime = GetLastLoginTime(GetDateTimeValue(reader["last_login_time"]))
                                 };
                             }
                         }
@@ -112,11 +112,11 @@ namespace EatAppApi.Services
                                     Id = int.Parse(GetStringValue(reader["id"])),
                                     Username = GetStringValue(reader["username"]),
                                     Fullname = GetStringValue(reader["fullname"]),
-                                    //PasswordHash = GetStringValue(reader["password_hash"]),
                                     Email = GetStringValue(reader["email"]),
                                     Avatar = GetStringValue(reader["avatar"]),
                                     Role = (UserRole)int.Parse(GetStringValue(reader["role"])),
                                     CreatedTime = GetDateTimeValue(reader["created_time"]).Value.ToLocalTime(),
+                                    LastLoginTime = GetLastLoginTime(GetDateTimeValue(reader["last_login_time"]))
                                 };
                             }
                         }
@@ -170,6 +170,33 @@ namespace EatAppApi.Services
             }
         }
 
+        public async Task<DbCommitResponse> UpdateLoginTimeAsync(int userId)
+        {
+            try
+            {
+                DbCommitResponse resp = null;
+                string query =
+                    "UPDATE user SET last_login_time = NOW() WHERE id = @id;";
+
+                using (MySqlConnection connection = new MySqlConnection(this.dbConString))
+                {
+                    await connection.OpenAsync();
+                    using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@id", userId);
+                        await cmd.ExecuteNonQueryAsync();
+
+                        resp = new DbCommitResponse
+                        {
+                            IsSuccess = true,
+                            Message = $"Last login time updated for user ID '{userId}'"
+                        };
+                    }
+                }
+                return resp;
+            }
+            catch (Exception ex) { return new DbCommitResponse { IsSuccess = false, Message = ex.Message }; }
+        }
 
         public async Task<bool> IsUsernameExistAsync(string username)
         {
@@ -263,12 +290,12 @@ namespace EatAppApi.Services
                                 {
                                     Id = int.Parse(GetStringValue(reader["id"])),
                                     Username = GetStringValue(reader["username"]),
-                                    //PasswordHash = GetStringValue(reader["password_hash"]),
                                     Fullname = GetStringValue(reader["fullname"]),
                                     Email = GetStringValue(reader["email"]),
                                     Avatar = GetStringValue(reader["avatar"]),
                                     Role = (UserRole)int.Parse(GetStringValue(reader["role"])),
                                     CreatedTime = GetDateTimeValue(reader["created_time"]).Value.ToLocalTime(),
+                                    LastLoginTime = GetLastLoginTime(GetDateTimeValue(reader["last_login_time"]))
                                 };
 
                                 userList.Add(user);
@@ -343,6 +370,13 @@ namespace EatAppApi.Services
                 return resp;
             }
             catch (Exception ex) { return new DbCommitResponse { IsSuccess = false, Message = ex.Message }; }
+        }
+
+        private DateTime? GetLastLoginTime(DateTime? lastLoginTime)
+        {
+            if (lastLoginTime.HasValue)
+                return lastLoginTime.Value.ToLocalTime();
+            else return null;
         }
 
         #endregion

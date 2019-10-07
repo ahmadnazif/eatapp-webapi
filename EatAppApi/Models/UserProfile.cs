@@ -14,8 +14,8 @@ namespace EatAppApi.Models
         public string Email { get; set; }
         public string Fullname { get; set; }
         public string Avatar { get; set; }
-        //public string PlainPassword { get; set; }
         public UserRole Role { get; set; }
         public DateTime CreatedTime { get; set; }
+        public DateTime? LastLoginTime { get; set; }
     }
 }

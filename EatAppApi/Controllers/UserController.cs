@@ -75,11 +75,14 @@ namespace EatAppApi.Controllers
             {
                 var valid = PasswordHasher.IsEqual(ua.PasswordHash, ua.PasswordSalt, ul.Password);
                 if (valid)
+                {
+                    await dbHelper.UpdateLoginTimeAsync(ua.UserId);
                     return new UserAuthResponse
                     {
                         IsSuccess = true,
                         Message = "User authenticated"
                     };
+                }
             }
 
             return new UserAuthResponse
