@@ -27,6 +27,13 @@ namespace EatAppApi
         {
             services.AddTransient<ITimezoneHelper, TimezoneHelper>();
             services.AddSingleton<IMysqlDbHelper, MysqlDbHelper>();
+
+            // new
+            services.AddCors(c =>
+            {
+                c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
+            });
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
@@ -38,6 +45,7 @@ namespace EatAppApi
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors(options => options.AllowAnyOrigin()); // new
             app.UseMvc();
         }
     }
