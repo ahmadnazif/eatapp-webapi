@@ -32,6 +32,8 @@ namespace EatAppApi
             services.AddCors(c =>
             {
                 c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
+                c.AddPolicy("AllowAllHeaders", options => options.AllowAnyHeader());
+                c.AddPolicy("AllowAllMethods", options => options.AllowAnyMethod());
             });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
@@ -45,7 +47,12 @@ namespace EatAppApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors(options => options.AllowAnyOrigin()); // new
+            app.UseCors(options =>
+            {
+                options.AllowAnyOrigin();
+                options.AllowAnyHeader();
+                options.AllowAnyHeader();
+            }); // new
             app.UseMvc();
         }
     }
